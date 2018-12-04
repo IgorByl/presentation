@@ -1,0 +1,649 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Webpack by IgorByl</title>
+
+		<link rel="stylesheet" href="css/reveal.css">
+		<link rel="stylesheet" href="css/theme/league.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides"><img class="logo" src="images/webpack_logo_squire.png"/>	
+				<section>	
+					<img width=100% src='./images/webpack_logo2.png' alt='webpack big logo'/>
+					<span class = "name_mainpage">...create simple config with Igor Bulaty</span>
+				</section>
+				<section>
+					<img width=100% src='./images/webpack_info.png' alt='webpack used for'/>
+					<span class="text">Webpack takes modules with dependencies and generates static assets 
+						representing those modules.</span>
+					<aside class="notes">
+						What is webpack?
+						...(read slide text)...
+						
+						We all know it is a bad practice to mix concerns in one file, 
+						so we should write our app with modules
+						when each module do only one thing.
+						But web browsers don't understand these well defined modules.
+					</aside>
+				</section>
+				<section>
+					<section>
+						<img width=75% src='./images/webpack_transform.png' alt='webpack transform'/>
+						<br>
+						<span>
+							Webpack builds 
+							a dependency graph which maps every module your project needs and generates one or more bundles.
+						</span>
+						<aside class="notes">
+							Starting from a list of modules defined in its config file, webpack 
+							recursively builds a dependency graph that includes every module your application 
+							needs, then bundles all of those modules into a small number of bundles - often, 
+							just one - to be loaded by the browser.
+
+							And webpack's core philosofy says that Everything is a module — 
+							Just like JS files can be “modules”, everything else (CSS, Images, HTML) can also be modules.
+						</aside>
+					</section>
+				</section>
+				<section>
+					<h2>Webpack in <a>install</a></h2>
+					<ul>
+						<li class="fragment">Node.js</li>
+						<li class="fragment">$ npm init -><span class="fragment highlight-blue">answer yes to all questions</span> -> package.json</li>
+						<li class="fragment">$ npm install --save-dev webpack</li>
+						<li class="fragment">webpack.config.js</li>
+					</ul>
+					<aside class="notes">
+						To install webpack on your machine, 
+						you need to have node installed. You can download node.js from its official website.
+
+						Once you have node.js installed, you can create a new node module using package 
+						managers for JavaScript. It will create a new file package.json. 
+						Here i use npm package manager.
+						
+						Creaters recommend locall installing: This makes it easier to upgrade projects 
+						individually when breaking changes are introduced.
+					</aside>
+				</section>
+				<section><h4><a>package.json scripts</a></h4>
+					<pre class="fragment"><code class="hljs" data-trim contenteditable>
+								"scripts": {
+									"start":"webpack --config webpack.config.js",
+									"build": "webpack",
+									"watch": "webpack --watch"
+								}
+							</code></pre>
+					<p class="fragment">	
+						<br>
+						$ npm run start
+						<br>
+						$ npm run build
+						<br>
+						$ npm run watch
+					</p>
+					<aside class="notes">		
+							Let's adjust our package.json by adding an npm script:
+
+							Script npm run start will create webpack.config.js file
+							(or you can create it in our local folder)
+
+							Now the npm run build command can be used. 
+							
+							Note that you have to relaunch the webpack again to pick up configuration changes.
+							With the launch of npm run watch, a process will start that automatically 
+							links our files if any of them changes.
+					</aside>
+				</section>
+<!-- __________________________________________________________________________________________________________________ -->
+				<section>
+					<h2><a>webpack.config.js</a></h2>
+					<pre class = 'fragment'><code class="hljs" data-trim contenteditable>
+							const path = require('path');
+
+							module.exports = {
+								mode: 'development',
+								entry: './foo.js',
+								output: {
+								path: path.resolve(__dirname, 'dist'),
+								filename: 'foo.bundle.js'
+								}
+							};								
+					</code></pre>
+					<p class = 'fragment'>A configuration file in Webpack is basically a common.js module.</p>
+					<aside class="notes">
+						In this presentation we will look at the configuration file in its most basic 
+						form, but don’t let it take you through - the webpack configuration file is quite 
+						powerful, varies greatly from project to project and in some cases can become very complex.
+
+						The config file is a place to put all of your configuration, loaders (explained later), 
+						and other specific information relating to your build.
+
+						So, let start from the begining.
+					</aside>
+				</section>
+				<section>
+					<h3>Where is my <a>Entry point</a>?</h3>
+					<br>
+					<pre class="fragment"><code class="hljs" data-trim contenteditable>
+						module.exports = {
+							entry:'./src/index.js'
+							// string | object | array
+						} 
+					</code></pre>
+					<br>
+					<p class="fragment">
+						An <mark>entry point</mark> indicates which module webpack should 
+						use to begin building out its internal dependency graph.
+					</p>
+					<aside class="notes">
+						Entry tells the Webpack where the root module or the starting point is. 
+						By default its value is ./src/index.js.
+						This can be a String, an Array or an Object. This could confuse you but 
+						the different types are used for different purposes.
+						If you have a single starting point (like most apps), you can use any format 
+						and the result will be the same.
+					</aside>
+				</section>
+				<section><span><mark>SPA:</mark> one entry point, <mark>MPA:</mark> multiple entry points.</span>
+					<br>
+					<br>
+					<pre><code class="hljs" data-trim contenteditable>
+							module.exports = {
+								entry: {
+									pageOne: './src/pageOne/index.js',
+									pageTwo: './src/pageTwo/index.js',
+									pageThree: './src/pageThree/index.js'
+								};
+							}; 
+						</code></pre>
+					<aside class="notes">
+							We are telling webpack that we would like 3 separate dependency graphs.
+							In a multi-page application, the server is going to fetch a new HTML 
+							document for you. 
+							The page reloads this new document and assets are redownloaded.
+					</aside>
+				</section>
+				<section>
+					<h3><a>Output</a></h3>
+					<p>... is  an object containing your output configuration.</p>
+					<br>
+					<pre><code class="hljs" data-trim contenteditable>
+							const path = require('path');
+
+							module.exports = {
+								output: {
+								path: path.resolve(__dirname, 'dist'),
+								filename: 'main.js'
+								}
+							};
+					</code></pre>
+					<p class="fragment">
+						The <mark>output property</mark> tells webpack where to emit the bundles
+						it creates and how to name these files. 
+					</p>
+					<aside class="notes">
+						The output key contains set of options instructing webpack on how 
+						and where it should output your bundles, assets and anything else you 
+						bundle or load with webpack.
+
+						Output object has two keys: path and filename.
+
+						In our build, we only specify the filename key for 
+						the name of the file we want Webpack to build (main.js).
+						Output tells the Webpack where and how to store the resulting files. 
+						
+						“path” simply tells the Webpack where it should store the result.
+						It defaults to ./dist/main.js for the main output file and to the ./dist 
+						folder for any other generated file.
+
+						The path module being imported at the top, it is a core Node.js module 
+						that gets used to manipulate file paths.
+						The path.resolve() method resolves a sequence of paths or path segments 
+						into an absolute path.
+					</aside>
+				</section>
+				<section><a>Output with Multiple Entry Points</a>
+					<br>
+					<pre><code class="hljs" data-trim contenteditable>
+						module.exports = {
+							entry: {
+								app: './src/app.js',
+								search: './src/search.js'
+								},
+							output: {
+								filename: '[name].js',
+								path: __dirname + '/dist'
+								}
+						};
+						// writes to disk: ./dist/app.js, ./dist/search.js
+					</code></pre>
+					<br>
+					<ul class="fragment">
+						<li>one output configuration is specified</li>
+						<li>use substitutions <mark>'[name].js'</mark></li>
+					</ul>
+					<aside class="notes">
+						Note that, while there can be multiple entry points, only one 
+						output configuration is specified.	
+						If your configuration has multiple entry points 
+						you should use substitutions to ensure that each file has a unique name.
+					</aside>
+				</section>
+				<section>
+					<h3><a>Mode</a></h3><img id='dev' class="fragment fade-up" width=40% src='./images/dev.png' alt='production/development'/>
+					<br>
+					<pre><code class="hljs" data-trim contenteditable>
+							module.exports = {
+								mode: 'production/development/none'
+								};
+					</code></pre>
+					<br>
+					<p class="fragment">... determine how the different types of modules within a project will be treated.</p>
+					<aside class="notes">
+						By setting the mode parameter to either development, 
+						production or none, you can enable webpack's built-in 
+						optimizations that correspond to each environment. 
+						The default value is production.
+					</aside>
+				</section>
+				<section>
+					<h3><a>Loader</a></h3>
+					<section>
+						<p style="display: inline-block;" class="fragment fade-up">... is just a JavaScript module that exports a function.</p>
+						<p style="display: inline-block;" class="fragment fade-down">
+							Loaders allow webpack <span class="fragment highlight-blue">to process other types of files</span> 
+							(not only JavaScript and JSON) and 
+							convert them into valid modules.
+						</p>
+						<aside class="notes">
+							Out of the box, webpack only understands JavaScript and JSON files. 
+							Loaders allow webpack to process other types of files and convert them 
+							into valid modules that can be consumed by your application and added to 
+							the dependency graph.
+						</aside>
+					</section>
+					<section>
+						<br>
+						<span>Loaders are how <a>Webpack learns</a> new functionality.</span>
+						<pre><code class="hljs" data-trim contenteditable>
+								const path = require('path');
+
+								module.exports = {
+									module: {
+										rules: [
+											{ test: /\.txt$/, use: 'raw-loader' }
+										]
+									};
+								};
+						</code></pre>
+						<h4>Loaders have a <a>rule's property</a> with two required properties in webpack configuration:</h4>
+						<ul>
+							<li class="fragment fade-right">the <span class="fragment highlight-blue">test</span> property</li>
+							<li class="fragment fade-left">the <span class="fragment highlight-blue">use</span> property</li>
+						</ul>
+						<aside class="notes">
+							Loaders are additional node modules that help ‘load’ or ‘import’ 
+							files of various types into browser acceptable formats like JS, 
+							Stylesheets and so on.
+
+							Code above tells webpack's compiler the following:
+							"Hey webpack compiler, when you come across a path 
+							that resolves to a '.txt' file inside of a require()/import 
+							statement, use the raw-loader to transform it before you add 
+							it to the bundle."
+							
+							At a high level, loaders have two properties in your webpack configuration:
+							1.	The test property identifies which file or files should be transformed.
+							2.	The use property indicates which loader should be used to do the transforming.
+						</aside>
+					</section>
+					<section>
+						<br>
+						<br>
+						<span>Using <a>Babel</a> with Webpack: let’s write some <a>ES6</a>!</span>
+							<img width=90% src='./images/babel.png' alt='webpack + babel = ES6'/>
+							<ul class="fragment fade-right">
+								<li>
+								$ npm install <span class="fragment highlight-red"> babel-loader @babel/core @babel/preset-env </span> --save-dev webpack
+								</li>
+								<br>
+								<li>add babel loader in webpack.config.js</li>
+							</ul>
+							<aside class="notes">
+								For example: You can use loader to convert JS written 
+								in ES6 to browser acceptable ES5: for this perpose
+								we will install and use babel-loader.
+
+								babel-core is the babel npm package
+								babel-loader is the babel module loader for Webpack
+								babel-preset-es2015 is a babel preset for all es2015 plugins
+							</aside>
+					</section>
+					<section>
+						<pre><code class="hljs" data-trim contenteditable>
+							module: {
+								rules: [{
+									test: /\.js$/,
+									exclude: [/node_modules/],
+									use: {
+										loader: 'babel-loader',
+										options: {
+											presets: ['@babel/preset-env']
+										}
+									}
+								}];
+							};</code></pre>
+							<br>
+							<p class="fragment fade-right"><i>Congrats, you are now <a>running babel</a> with Webpack!</i></p>
+						<aside class="notes">
+							To add a loader in Webpack, you must first create a key named 
+							module that is an object. In the module object, create a key named 
+							'rules' that is an array. In the array, create an object 'use' for loader and options. 
+
+							As you can see above, we have added three keys to our first loader.
+							1.	TEST — a regular expression that tests what kind of files to run 
+							through this loader. As you can see, we have added a regex to test all 
+							files with an .js extension.
+							2. EXCLUDE — which files the loader should exclude /ignore. We have 
+							added the node_modules folder.
+							3. USE property indicates which loader should be used to do the transforming
+							4. PRESETS — set the es2015 presets that were installed earlier
+							And - profit: you are now running babel with Webpack!
+						</aside>
+					</section>
+				</section>
+				<section>
+					<h3>What is about <a>CSS</a>?</h3>
+					<pre><code class="hljs" data-trim contenteditable>	$ npm install --save-dev css-loader style-loader</code></pre>
+					<pre><code class="hljs" data-trim contenteditable>
+							module.exports = {
+								module: {
+									rules: [
+										{
+										test: /\.css$/,
+										use: [
+											{ loader: 'style-loader' },
+											{ loader: 'css-loader',
+												options: {
+													modules: true
+												}
+											}
+											]
+										}
+									]
+								};
+							};
+					</code></pre>
+					<span></span>
+					<aside class="notes">
+						Loaders even allow you to do things like import CSS files directly from your JavaScript modules!
+
+						npm install css-loader - Loads CSS file with resolved imports and returns CSS code
+						npm install style-loader -  Add exports of a module as style tag to DOM
+
+						Loaders are evaluated/executed from right to left. In the example below execution starts with
+						css-loader and ends with style-loader. 
+
+						"Hey webpack compiler, when you come across a path that resolves to a 
+						'.css' file inside of a require()/import statement, use the style-loader then
+						css-loader to transform it before you add it to the bundle."
+
+						options modules: true - Enable CSS Modules and setup mode (it is false by Default).
+						The modules option enables the CSS Modules spec and setup basic behaviour.
+					</aside>
+				</section>
+				<section>
+						<h3>What is about <a>IMAGES</a>?</h3>
+						<pre><code class="hljs" data-trim contenteditable>$ npm install file-loader --save-dev</code></pre>
+						<pre><code class="hljs" data-trim contenteditable>
+								module.exports = {
+									module: {
+									  rules: [
+										{
+										  test: /\.(png|jpg|gif)$/,
+										  use: [
+											{
+											  loader: 'file-loader'
+											}
+										  ]
+										}
+									  ]
+									}
+								  };
+						</code></pre>
+						<span></span>
+						<aside class="notes">
+							To begin, you'll need to install file-loader.
+							And run webpack.
+							This will emit file.png/jpg/gif as a file in the output directory  
+							and returns the public URL of the file.
+						</aside>
+				</section>
+				<section>
+					<h3><a>Plugins</a></h3>
+					<section>
+						<br>
+						<p class="fragment fade-right">... can give loaders more features.</p>
+						<p class="fragment fade-left">Plugins <span class="fragment highlight-blue">work at bundle or chunk level.</span></p>
+							<pre class="fragment"><code class="hljs" data-trim contenteditable>$ npm install copy-webpack-plugin --save-dev</code></pre>
+							<pre class="fragment"><code class="hljs" data-trim contenteditable>
+								const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+								module.exports = {
+									plugins: [
+										new CopyWebpackPlugin([{
+											from: './src/*.html',
+											to: './dist'
+											}])									  
+										]
+									]
+								};</code></pre>
+						<aside class="notes">
+							As you might have realized, Loaders work at the individual file level during or before the bundle is generated.
+							Where as Plugins work at bundle or chunk level and usually work at the end of the bundle generation process. 
+
+							In the example above, we install the copy-webpack-plugin that generates an HTML file for your application by 
+							copies individual file './src/*.html' to the build directory 'dist'.
+
+							You need to require() it and add it to the plugins array.
+							Since plugins can take arguments/options, you must pass a new instance to the plugins property in your 
+							webpack configuration. 
+						</aside>
+					</section>	
+					<section>
+						<br>
+						<h4>Gather <a>all the CSS into one place</a> with the help of plugins!</h4>
+						<pre class="fragment fade-right"><code class="hljs" data-trim contenteditable>$ npm install --save-dev mini-css-extract-plugin</code></pre>
+						<pre class="fragment"><code class="hljs" data-trim contenteditable>
+								const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+								module.exports = {
+									optimization: { //Webpack is creating chunk file
+										splitChunks: {
+										  cacheGroups: {
+											styles: {
+											  	name: 'styles', // chunk's name
+											  	test: /\.css$/, // find all the css
+											  	chunks: 'all', // include all chunks
+											  	enforce: true // ignore options
+											}
+										  }
+										}
+									},
+									plugins: [
+										new MiniCssExtractPlugin({
+										filename: "build.css",
+										})
+									],
+									module: {
+										rules: [
+										{
+											test: /\.css$/,
+											use: [
+											MiniCssExtractPlugin.loader,
+											"css-loader"
+											]
+										}
+										]
+									}
+								};</code></pre>
+						<aside class="notes">
+							Install mini-css-extract-plugin.
+							This plugin extracts all CSS into separate files.
+							
+							The CSS can be extracted in one CSS file with the help of
+							mini-css-extract-plugin using optimization.splitChunks.cacheGroups.
+
+							Since webpack v4, a spetial plugin (CommonsChunkPlugin was used to avoid duplicated 
+							dependencies across chunks) was removed in favor of optimization.splitChunks.
+
+							A chunk is code which will break apart from main bundle that is main.js by default and form 
+							it’s own file known as chunk file.
+
+							'splitChunks.cacheGroups' - tells webpack to create chunks based on some conditions, 
+							for example, create a separate chunk file for all the code being imported and
+							matched by Regular Expresion in the whole application.
+
+							ChacheGroups is a plain object with key being the name of chunk.
+							
+							So, we create the split chunk 'styles'.
+
+							'chunks:all' - indicates which chunks will be selected for optimization. 
+
+							'enforce: true' - tells webpack to ignore plenty specific options and always create chunks for this cache group.
+							
+							Similarly mini-css-extract-plugin internally uses css-loader 
+							to gather all the CSS into one place and finally extracts the result into a separate 
+							build.css file and includes the link to style.css into index.html.
+						</aside>
+					</section>
+				</section>
+				<section>
+					<h3>Result:</h3>
+					<pre class="fragment"><code class="hljs" data-trim contenteditable>
+						const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+						const CopyWebpackPlugin = require('copy-webpack-plugin');
+
+						module.exports = {
+							resolve: {
+								extensions: ['.js'],
+							},
+							mode: 'development',
+							entry: './src/index',
+							output: {
+								filename: 'bundle',
+							},
+							devtool: 'cheap-eval-source-map',
+							optimization: { 
+								splitChunks: {
+									cacheGroups: {
+									styles: {
+										name: 'styles', 
+										test: /\.css$/, 
+										chunks: 'all', 
+										enforce: true 
+									}
+									}
+								}
+							},
+							plugins: [
+								new MiniCssExtractPlugin({
+									filename: "build.css"
+								}),
+								new CopyWebpackPlugin([{
+									from: './src/*.html',
+									to: './dist'
+								}])		
+							],
+							module: {
+								rules: [
+									{
+										test: /\.js$/,
+										exclude: [/node_modules/],
+										use: [{
+										loader: 'babel-loader',
+										options: {
+											presets: ['@babel/preset-env'],
+										},
+										}],
+									},	
+									{
+										test: /\.css$/,
+										use: [
+										MiniCssExtractPlugin.loader,
+										"css-loader"
+										]
+									},
+									{
+										test: /\.(png|jpg|gif)$/,
+										use: [
+										{
+											loader: 'file-loader'
+										}
+										]
+									}
+								]
+							}
+						};</code></pre>
+					<aside class="notes">
+						Many Webpack config files have a resolve extensions property that has string 
+						like shown below. The string is there to help resolve imports without extensions like: 
+						require('./build') or import files from './dist' without file extensions.
+
+						And devtool is an option controls if and how source maps are generated.
+						Cheap-eval-source-map is used for transformed code in lines. 
+
+						To conclude:
+						As the result of our work we get ready to use webpack config file
+						with css, html, images files and in any web browser.
+						I build it as an example of my Youtube-client task.
+						And I hope this presentation will be usefull for you.
+					</aside>
+				</section>				
+				<section>
+					<span>References:</span>
+					<br>
+					<br>
+					<span><a>https://webpack.js.org</a> (DOCUMENTATION)</span>
+					<aside class="notes">
+						To learn more you should visit:
+						https://webpack.js.org site.
+					</aside>
+				</section>
+				<section>
+					... THANK YOU FOR ATTENTION ...
+				</section>
+			</div>
+		</div>
+
+		<script src="lib/js/head.min.js"></script>
+		<script src="js/reveal.js"></script>
+
+		<script>
+			Reveal.initialize({
+				dependencies: [
+					{ src: 'plugin/markdown/marked.js' },
+					{ src: 'plugin/markdown/markdown.js' },
+					{ src: 'plugin/notes/notes.js', async: true },
+					{ src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
